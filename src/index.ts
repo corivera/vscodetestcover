@@ -1,11 +1,12 @@
-/*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
- *--------------------------------------------------------*/
+/* --------------------------------------------------------------------------------------------
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
 
 'use strict';
-
+import * as vscode from 'vscode';
 import paths = require('path');
-import fs = require('fs');
+const fs = require('fs');
 import Mocha = require('mocha');
 import istanbul = require('istanbul');
 
@@ -13,7 +14,7 @@ let glob = require('glob');
 let remapIstanbul = require('remap-istanbul');
 
 // Linux: prevent a weird NPE when mocha on Linux requires the window size from the TTY
-// Since we are not running in a tty environment, we just implementt he method statically
+// Since we are not running in a tty environment, we just implement the method statically
 let tty = require('tty');
 if (!tty.getWindowSize) {
     tty.getWindowSize = function (): number[] { return [80, 75]; };
@@ -26,90 +27,16 @@ let mocha = new Mocha({
 
 let testOptions = undefined;
 
-export function configure(mochaOpts, testOpts): void {
+function configure(mochaOpts, testOpts): void {
     mocha = new Mocha(mochaOpts);
     testOptions = testOpts;
 }
+exports.configure = configure;
 
-function _mkDirIfExists(dir: string): void {
+function mkDirIfExists(dir: string): void {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
-}
-
-function _readCoverOptions(testsRoot: string): ITestRunnerOptions {
-    let coverConfigPath = paths.join(testsRoot, testOptions.coverConfig);
-    let coverConfig: ITestRunnerOptions = undefined;
-    if (fs.existsSync(coverConfigPath)) {
-        let configContent = fs.readFileSync(coverConfigPath).toString();
-        coverConfig = JSON.parse(configContent);
-    }
-    return coverConfig;
-}
-
-export function run(testsRoot, clb): any {
-    // Enable source map support
-    require('source-map-support').install();
-
-    // Read configuration for the coverage file
-    let coverOptions: ITestRunnerOptions = _readCoverOptions(testsRoot);
-    if (coverOptions && coverOptions.enabled) {
-        // Setup coverage pre-test, including post-test hook to report
-        let coverageRunner = new CoverageRunner(coverOptions, testsRoot, clb);
-        coverageRunner.setupCoverage();
-    }
-
-    // Glob test files
-    glob('**/**.test.js', { cwd: testsRoot }, function (error, files): any {
-        if (error) {
-            return clb(error);
-        }
-        try {
-            // Fill into Mocha
-            files.forEach(function (f): Mocha {
-                return mocha.addFile(paths.join(testsRoot, f));
-            });
-            // Run the tests
-            let failureCount = 0;
-
-            mocha.run()
-            .on('fail', function (test, err): void {
-                failureCount++;
-            })
-            .on('end', function (): void {
-                clb(undefined, failureCount);
-            });
-        } catch (error) {
-            return clb(error);
-        }
-    });
-}
-
-interface IRemapOptions {
-    /**
-     * a string containing to utilise as the base path
-     * for determining the location of the source file
-     */
-    basePath?: string;
-    /**
-     * Should absolute paths be used when outputting remapped source paths?
-     */
-    useAbsolutePaths?: boolean;
-    /**
-     * a string or Regular Expression that filters out any coverage where the file path matches
-     */
-    exclude?: string;
-    warn?: Function;
-}
-interface ITestRunnerOptions {
-    enabled?: boolean;
-    relativeCoverageDir: string;
-    relativeSourcePath: string;
-    ignorePatterns: string[];
-    includePid?: boolean;
-    reports?: string[];
-    verbose?: boolean;
-    remapOptions: IRemapOptions;
 }
 
 class CoverageRunner {
@@ -118,10 +45,11 @@ class CoverageRunner {
     private matchFn: any = undefined;
     private instrumenter: any = undefined;
 
-    constructor(private options: ITestRunnerOptions, private testsRoot: string, private endRunCallback: any) {
+    constructor(private options: ITestRunnerOptions, private testsRoot: string, endRunCallback: any) {
         if (!options.relativeSourcePath) {
             return endRunCallback('Error - relativeSourcePath must be defined for code coverage to work');
         }
+
     }
 
     public setupCoverage(): void {
@@ -159,7 +87,7 @@ class CoverageRunner {
         // are required, the instrumented version is pulled in instead. These instrumented versions
         // write to a global coverage variable with hit counts whenever they are accessed
         self.transformer = self.instrumenter.instrumentSync.bind(self.instrumenter);
-        let hookOpts = { verbose: false, extensions: ['.js']};
+        let hookOpts = { verbose: false, extensions: ['.js'] };
         istanbul.hook.hookRequire(self.matchFn, self.transformer, hookOpts);
 
         // initialize the global variable to stop mocha from complaining about leaks
@@ -213,31 +141,21 @@ class CoverageRunner {
         let reportingDir = paths.join(self.testsRoot, self.options.relativeCoverageDir);
         let includePid = self.options.includePid;
         let pidExt = includePid ? ('-' + process.pid) : '',
-        coverageFile = paths.resolve(reportingDir, 'coverage' + pidExt + '.json');
+            coverageFile = paths.resolve(reportingDir, 'coverage' + pidExt + '.json');
 
-        _mkDirIfExists(reportingDir); // yes, do this again since some test runners could clean the dir initially created
+        mkDirIfExists(reportingDir); // yes, do this again since some test runners could clean the dir initially created
 
         fs.writeFileSync(coverageFile, JSON.stringify(cov), 'utf8');
 
-        let remapOptions: IRemapOptions = {
-            warn: (warning => {
+        let remappedCollector: istanbul.Collector = remapIstanbul.remap(cov, {
+            warn: warning => {
                 // We expect some warnings as any JS file without a typescript mapping will cause this.
                 // By default, we'll skip printing these to the console as it clutters it up
                 if (self.options.verbose) {
-                console.warn(warning);
-                }
-            })
-        };
-        if (self.options.remapOptions) {
-            remapOptions = Object.assign(remapOptions, self.options.remapOptions);
-            if (remapOptions.basePath && !paths.isAbsolute(remapOptions.basePath)) {
-                if(self.testsRoot && !remapOptions.basePath.startsWith(self.testsRoot))
-                {
-                    remapOptions.basePath = paths.join(self.testsRoot, remapOptions.basePath);
+                    console.warn(warning);
                 }
             }
-        }
-        let remappedCollector: istanbul.Collector = remapIstanbul.remap(cov, remapOptions);
+        });
 
         let reporter = new istanbul.Reporter(undefined, reportingDir);
         let reportTypes = (self.options.reports instanceof Array) ? self.options.reports : ['lcov'];
@@ -246,4 +164,66 @@ class CoverageRunner {
             console.log(`reports written to ${reportingDir}`);
         });
     }
+}
+
+function readCoverOptions(testsRoot: string): ITestRunnerOptions {
+    let coverConfigPath = paths.join(testsRoot, testOptions.coverConfig);
+    let coverConfig: ITestRunnerOptions = undefined;
+    if (fs.existsSync(coverConfigPath)) {
+        let configContent = fs.readFileSync(coverConfigPath);
+        coverConfig = JSON.parse(configContent);
+    }
+    return coverConfig;
+}
+
+function run(testsRoot, clb): any {
+    // Enable source map support
+    require('source-map-support').install();
+
+    // Read configuration for the coverage file
+    let coverOptions: ITestRunnerOptions = readCoverOptions(testsRoot);
+    if (coverOptions && coverOptions.enabled) {
+        // Setup coverage pre-test, including post-test hook to report
+        let coverageRunner = new CoverageRunner(coverOptions, testsRoot, clb);
+        coverageRunner.setupCoverage();
+    }
+
+    // Force the extension to activate by running one of our commands
+    vscode.commands.executeCommand('mssql.connect').then(() => {
+        // Glob test files
+        glob('**/**.test.js', { cwd: testsRoot }, function (error, files): any {
+            if (error) {
+                return clb(error);
+            }
+            try {
+                // Fill into Mocha
+                files.forEach(function (f): Mocha {
+                    return mocha.addFile(paths.join(testsRoot, f));
+                });
+                // Run the tests
+                let failureCount = 0;
+
+                mocha.run()
+                    .on('fail', function (test, err): void {
+                        failureCount++;
+                    })
+                    .on('end', function (): void {
+                        clb(undefined, failureCount);
+                    });
+            } catch (error) {
+                return clb(error);
+            }
+        });
+    });
+}
+exports.run = run;
+
+interface ITestRunnerOptions {
+    enabled?: boolean;
+    relativeCoverageDir: string;
+    relativeSourcePath: string;
+    ignorePatterns: string[];
+    includePid?: boolean;
+    reports?: string[];
+    verbose?: boolean;
 }
