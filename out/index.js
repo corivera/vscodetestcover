@@ -4,7 +4,6 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-const vscode = require("vscode");
 const paths = require("path");
 const fs = require('fs');
 const Mocha = require("mocha");
@@ -159,32 +158,29 @@ function run(testsRoot, clb) {
         let coverageRunner = new CoverageRunner(coverOptions, testsRoot, clb);
         coverageRunner.setupCoverage();
     }
-    // Force the extension to activate by running one of our commands
-    vscode.commands.executeCommand('mssql.connect').then(() => {
-        // Glob test files
-        glob('**/**.test.js', { cwd: testsRoot }, function (error, files) {
-            if (error) {
-                return clb(error);
-            }
-            try {
-                // Fill into Mocha
-                files.forEach(function (f) {
-                    return mocha.addFile(paths.join(testsRoot, f));
-                });
-                // Run the tests
-                let failureCount = 0;
-                mocha.run()
-                    .on('fail', function (test, err) {
-                    failureCount++;
-                })
-                    .on('end', function () {
-                    clb(undefined, failureCount);
-                });
-            }
-            catch (error) {
-                return clb(error);
-            }
-        });
+    // Glob test files
+    glob('**/**.test.js', { cwd: testsRoot }, function (error, files) {
+        if (error) {
+            return clb(error);
+        }
+        try {
+            // Fill into Mocha
+            files.forEach(function (f) {
+                return mocha.addFile(paths.join(testsRoot, f));
+            });
+            // Run the tests
+            let failureCount = 0;
+            mocha.run()
+                .on('fail', function (test, err) {
+                failureCount++;
+            })
+                .on('end', function () {
+                clb(undefined, failureCount);
+            });
+        }
+        catch (error) {
+            return clb(error);
+        }
     });
 }
 exports.run = run;

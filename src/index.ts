@@ -188,32 +188,29 @@ function run(testsRoot, clb): any {
         coverageRunner.setupCoverage();
     }
 
-    // Force the extension to activate by running one of our commands
-    vscode.commands.executeCommand('mssql.connect').then(() => {
-        // Glob test files
-        glob('**/**.test.js', { cwd: testsRoot }, function (error, files): any {
-            if (error) {
-                return clb(error);
-            }
-            try {
-                // Fill into Mocha
-                files.forEach(function (f): Mocha {
-                    return mocha.addFile(paths.join(testsRoot, f));
-                });
-                // Run the tests
-                let failureCount = 0;
+    // Glob test files
+    glob('**/**.test.js', { cwd: testsRoot }, function (error, files): any {
+        if (error) {
+            return clb(error);
+        }
+        try {
+            // Fill into Mocha
+            files.forEach(function (f): Mocha {
+                return mocha.addFile(paths.join(testsRoot, f));
+            });
+            // Run the tests
+            let failureCount = 0;
 
-                mocha.run()
-                    .on('fail', function (test, err): void {
-                        failureCount++;
-                    })
-                    .on('end', function (): void {
-                        clb(undefined, failureCount);
-                    });
-            } catch (error) {
-                return clb(error);
-            }
-        });
+            mocha.run()
+                .on('fail', function (test, err): void {
+                    failureCount++;
+                })
+                .on('end', function (): void {
+                    clb(undefined, failureCount);
+                });
+        } catch (error) {
+            return clb(error);
+        }
     });
 }
 exports.run = run;
