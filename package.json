@@ -25,12 +25,19 @@
   },
   "dependencies": {
     "decache": "^4.4.0",
+    "del": "^5.1.0",
     "glob": "^7.1.2",
+    "gulp": "^4.0.2",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-tslint": "^8.1.4",
+    "gulp-typescript": "^6.0.0-alpha.1",
     "istanbul": "^0.4.5",
     "mocha": "5.1.1",
     "pm-mocha-jenkins-reporter": "^0.2.6",
     "remap-istanbul": "^0.11.1",
     "source-map-support": "^0.5.12",
+    "tslint": "^5.20.1",
+    "tslint-microsoft-contrib": "^6.2.0",
     "vscode": "^1.1.36"
   }
 }
