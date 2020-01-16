@@ -2,7 +2,7 @@
   "name": "vscodetestcover",
   "version": "1.0.3",
   "description": "A Mocha test runner with code coverage support for VSCode Extensions.",
-  "main": "./out/index.js",
+  "main": "./out/src/index.js",
   "scripts": {
     "compile": "tsc",
     "prepare": "npm run compile"
