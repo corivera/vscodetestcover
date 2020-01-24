@@ -4,7 +4,6 @@
  * ------------------------------------------------------------------------------------------ */
 
 'use strict';
-import * as vscode from 'vscode';
 import paths = require('path');
 const fs = require('fs');
 import Mocha = require('mocha');

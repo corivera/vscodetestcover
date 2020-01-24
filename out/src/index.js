@@ -184,5 +184,4 @@ function run(testsRoot, clb) {
     });
 }
 exports.run = run;
-
 //# sourceMappingURL=index.js.map
