@@ -37,7 +37,9 @@
     "remap-istanbul": "^0.11.1",
     "source-map-support": "^0.5.12",
     "tslint": "^5.20.1",
-    "tslint-microsoft-contrib": "^6.2.0",
-    "vscode": "^1.1.36"
+    "tslint-microsoft-contrib": "^6.2.0"
+  },
+  "resolutions": {
+	"esprima": "^4.0.0"
   }
 }
