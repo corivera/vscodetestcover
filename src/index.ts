@@ -200,7 +200,8 @@ function run(testsRoot, clb): any {
             // Run the tests
             let failureCount = 0;
 
-            mocha.run()
+            // Pass an empty handler to prevent NPE https://github.com/stanleyhlng/mocha-multi-reporters/issues/48
+            mocha.run(() => { })
                 .on('fail', function (test, err): void {
                     failureCount++;
                 })
