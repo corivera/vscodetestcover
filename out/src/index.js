@@ -170,7 +170,8 @@ function run(testsRoot, clb) {
             });
             // Run the tests
             let failureCount = 0;
-            mocha.run()
+            // Pass an empty handler to prevent NPE https://github.com/stanleyhlng/mocha-multi-reporters/issues/48
+            mocha.run(() => { })
                 .on('fail', function (test, err) {
                 failureCount++;
             })
@@ -184,4 +185,5 @@ function run(testsRoot, clb) {
     });
 }
 exports.run = run;
+
 //# sourceMappingURL=index.js.map
