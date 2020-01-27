@@ -1,6 +1,6 @@
 {
   "name": "vscodetestcover",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A Mocha test runner with code coverage support for VSCode Extensions.",
   "main": "./out/src/index.js",
   "scripts": {
@@ -21,22 +21,22 @@
   },
   "devDependencies": {
     "@types/node": "^10.7.0",
-    "typescript": "^3.4.5"
-  },
-  "dependencies": {
-    "decache": "^4.4.0",
+    "@types/mocha": "^5.2.5",
     "del": "^5.1.0",
-    "glob": "^7.1.2",
     "gulp": "^4.0.2",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-tslint": "^8.1.4",
     "gulp-typescript": "^6.0.0-alpha.1",
-    "istanbul": "^0.4.5",
-    "mocha": "5.1.1",
-    "pm-mocha-jenkins-reporter": "^0.2.6",
-    "remap-istanbul": "^0.11.1",
-    "source-map-support": "^0.5.12",
+    "typescript": "^3.4.5",
     "tslint": "^5.20.1",
     "tslint-microsoft-contrib": "^6.2.0"
+  },
+  "dependencies": {
+    "decache": "^4.4.0",
+    "glob": "^7.1.2",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.2.0",
+    "remap-istanbul": "^0.11.1",
+    "source-map-support": "^0.5.12"
   }
 }
