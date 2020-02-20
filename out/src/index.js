@@ -169,14 +169,9 @@ function run(testsRoot, clb) {
                 return mocha.addFile(paths.join(testsRoot, f));
             });
             // Run the tests
-            let failureCount = 0;
             // Pass an empty handler to prevent NPE https://github.com/stanleyhlng/mocha-multi-reporters/issues/48
-            mocha.run(() => { })
-                .on('fail', function (test, err) {
-                failureCount++;
-            })
-                .on('end', function () {
-                clb(undefined, failureCount);
+            mocha.run((failure) => {
+                clb(undefined, failure);
             });
         }
         catch (error) {
