@@ -4,12 +4,17 @@
         "outDir": "./out/",
         "module": "commonjs",
         "target": "ES6",
-        "lib": [ "es6", "dom" ],
+        "lib": [
+            "es6"
+        ],
         "sourceMap": true,
+        "rootDir": ".",
         "allowUnusedLabels": false,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "rootDir": "."
+        "alwaysStrict": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "forceConsistentCasingInFileNames": true
     },
     "exclude": [
         "node_modules"
