@@ -5,6 +5,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as Mocha from 'mocha';
 import * as iLibInstrument from 'istanbul-lib-instrument';
 import * as iLibCoverage from 'istanbul-lib-coverage';
@@ -62,6 +63,12 @@ class CoverageRunner {
         let fileMap = {};
         srcFiles.forEach(file => {
             let fullPath = path.join(sourceRoot, file);
+            // Windows paths are (normally) case insensitive so convert to lower case
+            // since sometimes the paths returned by the glob and the require hooks
+            // are different casings.
+            if (os.platform() === 'win32') {
+                fullPath = fullPath.toLocaleLowerCase();
+            }
             fileMap[fullPath] = true;
 
             // On Windows, extension is loaded pre-test hooks and this mean we lose
@@ -73,7 +80,15 @@ class CoverageRunner {
             decache(fullPath);
         });
 
-        this.matchFn = function (file: string): boolean { return fileMap[file]; };
+        this.matchFn = function (file: string): boolean {
+            // Windows paths are (normally) case insensitive so convert to lower case
+            // since sometimes the paths returned by the glob and the require hooks
+            // are different casings.
+            if (os.platform() === 'win32') {
+                file = file.toLocaleLowerCase();
+            }
+            return fileMap[file];
+        };
         this.matchFn.files = Object.keys(fileMap);
 
         // Hook up to the Require function so that when this is called, if any of our source files

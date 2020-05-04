@@ -6,6 +6,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 const Mocha = require("mocha");
 const iLibInstrument = require("istanbul-lib-instrument");
 const iLibCoverage = require("istanbul-lib-coverage");
@@ -52,6 +53,12 @@ class CoverageRunner {
         let fileMap = {};
         srcFiles.forEach(file => {
             let fullPath = path.join(sourceRoot, file);
+            // Windows paths are (normally) case insensitive so convert to lower case
+            // since sometimes the paths returned by the glob and the require hooks
+            // are different casings.
+            if (os.platform() === 'win32') {
+                fullPath = fullPath.toLocaleLowerCase();
+            }
             fileMap[fullPath] = true;
             // On Windows, extension is loaded pre-test hooks and this mean we lose
             // our chance to hook the Require call. In order to instrument the code
@@ -61,7 +68,15 @@ class CoverageRunner {
             // some shared global state that we lose.
             decache_1.default(fullPath);
         });
-        this.matchFn = function (file) { return fileMap[file]; };
+        this.matchFn = function (file) {
+            // Windows paths are (normally) case insensitive so convert to lower case
+            // since sometimes the paths returned by the glob and the require hooks
+            // are different casings.
+            if (os.platform() === 'win32') {
+                file = file.toLocaleLowerCase();
+            }
+            return fileMap[file];
+        };
         this.matchFn.files = Object.keys(fileMap);
         // Hook up to the Require function so that when this is called, if any of our source files
         // are required, the instrumented version is pulled in instead. These instrumented versions
@@ -118,6 +133,7 @@ class CoverageRunner {
                 cov[file] = this.instrumenter.fileCoverage;
             }
         });
+        // Convert the report to the mapped source files
         const mapStore = iLibSourceMaps.createSourceMapStore();
         const coverageMap = mapStore.transformCoverage(iLibCoverage.createCoverageMap(global[this.coverageVar])).map;
         // TODO Allow config of reporting directory with
