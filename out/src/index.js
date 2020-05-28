@@ -90,6 +90,12 @@ class CoverageRunner {
             catch (err) {
                 // missing source map...
             }
+            // Windows paths are (normally) case insensitive so convert to lower case
+            // since sometimes the paths returned by the glob and the require hooks
+            // are different casings.
+            if (os.platform() === 'win32') {
+                options.filename = options.filename.toLocaleLowerCase();
+            }
             return this.instrumenter.instrumentSync(code, options.filename, map);
         };
         let hookOpts = { verbose: false, extensions: ['.js'] };
