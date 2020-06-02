@@ -28,12 +28,6 @@ export function configure(mochaOpts: Mocha.MochaOptions, testOpts: ITestCoverOpt
     testOptions = testOpts;
 }
 
-function mkDirIfExists(dir: string): void {
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir);
-    }
-}
-
 class CoverageRunner {
     private coverageVar: string = '$$cov_' + new Date().getTime() + '$$';
     private transformer: iLibHook.Transformer;
@@ -163,13 +157,6 @@ class CoverageRunner {
 
         // TODO Allow config of reporting directory with
         let reportingDir = path.join(this.testsRoot, this.options.relativeCoverageDir);
-        let includePid = this.options.includePid;
-        let pidExt = includePid ? ('-' + process.pid) : '',
-            coverageFile = path.resolve(reportingDir, 'coverage' + pidExt + '.json');
-
-        mkDirIfExists(reportingDir); // yes, do this again since some test runners could clean the dir initially created
-
-        fs.writeFileSync(coverageFile, JSON.stringify(cov), 'utf8');
 
         const context = iLibReport.createContext({
             dir: reportingDir,
@@ -239,7 +226,6 @@ interface ITestRunnerOptions {
     relativeCoverageDir: string;
     relativeSourcePath: string;
     ignorePatterns: string[];
-    includePid?: boolean;
     reports?: string[];
     verbose?: boolean;
 }

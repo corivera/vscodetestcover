@@ -21,8 +21,7 @@ gulp.task('lint', () => {
 gulp.task('ext:compile', (done) => {
     return gulp.src([
                 config.paths.project.root + '/src/**/*.ts',
-                config.paths.project.root + '/src/**/*.js',
-                '!' + config.paths.project.root + '/typings/**/*.ts'])
+                config.paths.project.root + '/src/**/*.js'])
                 .pipe(srcmap.init())
                 .pipe(tsProject())
                 .on('error', function() {
