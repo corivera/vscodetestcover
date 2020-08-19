@@ -97,10 +97,6 @@ class CoverageRunner {
         this.unhookRequire = iLibHook.hookRequire(this.matchFn, this.transformer, hookOpts);
         // initialize the global variable to stop mocha from complaining about leaks
         global[this.coverageVar] = {};
-        // Hook the process exit event to handle reporting
-        process.on('exit', () => {
-            this.reportCoverage();
-        });
     }
     /**
      * Writes a coverage report. Note that as this is called in the process exit callback, all calls must be synchronous.
@@ -179,6 +175,7 @@ function run(testsRoot, clb) {
             });
             // Run the tests
             mocha.run((failureCount) => {
+                this.reportCoverage();
                 clb(undefined, failureCount);
             });
         }
@@ -188,4 +185,5 @@ function run(testsRoot, clb) {
     });
 }
 exports.run = run;
+
 //# sourceMappingURL=index.js.map
