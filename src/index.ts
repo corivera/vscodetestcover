@@ -108,11 +108,6 @@ class CoverageRunner {
         this.unhookRequire = iLibHook.hookRequire(this.matchFn, this.transformer, hookOpts);
         // initialize the global variable to stop mocha from complaining about leaks
         global[this.coverageVar] = {};
-
-        // Hook the process exit event to handle reporting
-        process.on('exit', () => {
-            this.reportCoverage();
-        });
     }
 
 
@@ -189,6 +184,9 @@ export function run(testsRoot: string, clb): any {
         // Setup coverage pre-test, including post-test hook to report
         let coverageRunner = new CoverageRunner(coverOptions, testsRoot, clb);
         coverageRunner.setupCoverage();
+        mocha.suite.afterAll(() => {
+            coverageRunner.reportCoverage();
+        })
     }
 
     // Glob test files
